@@ -77,7 +77,7 @@ module axis_frame_join #
 
 parameter CL_S_COUNT = $clog2(S_COUNT);
 
-parameter TAG_WORD_WIDTH = (TAG_WIDTH + DATA_WIDTH - 1) / DATA_WIDTH;
+parameter TAG_WORD_WIDTH = (TAG_WIDTH + DATA_WIDTH) / DATA_WIDTH;
 parameter CL_TAG_WORD_WIDTH = $clog2(TAG_WORD_WIDTH);
 
 // state register

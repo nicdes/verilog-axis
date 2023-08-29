@@ -1,4 +1,5 @@
 # Copyright (c) 2020 Alex Forencich
+# Copyright (c) 2020 Nico De Simone
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +21,10 @@
 
 # reset synchronizer timing constraints
 
-foreach inst [get_cells -hier -filter {(ORIG_REF_NAME == sync_reset || REF_NAME == sync_reset)}] {
-    puts "Inserting timing constraints for sync_reset instance $inst"
+puts "Inserting timing constraints for sync_reset instance"
 
-    # reset synchronization
-    set reset_ffs [get_cells -quiet -hier -regexp ".*/sync_reg_reg\\\[\\d+\\\]" -filter "PARENT == $inst"]
+# reset synchronization
+set reset_ffs [get_cells -quiet -hier -regexp ".*/sync_reg_reg\\\[\\d+\\\]"]
 
-    set_property ASYNC_REG TRUE $reset_ffs
-    set_false_path -to [get_pins -of_objects $reset_ffs -filter {IS_PRESET || IS_RESET}]
-}
+set_property ASYNC_REG TRUE $reset_ffs
+set_false_path -to [get_pins -of_objects $reset_ffs -filter {IS_PRESET || IS_RESET}]
