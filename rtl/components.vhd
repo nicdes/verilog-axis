@@ -6,7 +6,7 @@
 -- Author     : Nico De Simone  <nico.desimone@desy.de>
 -- Company    : DESY
 -- Created    : 2023-05-31
--- Last update: 2023-11-10
+-- Last update: 2023-11-14
 -- Platform   :
 -- Standard   : VHDL'08
 -------------------------------------------------------------------------------
@@ -369,6 +369,7 @@ package components is
 
                   status_valid                 : out std_ulogic;
                   status_ready                 : in  std_ulogic;
+                  status_frame_pad             : out std_ulogic;
                   status_frame_truncate        : out std_ulogic;
                   status_frame_length          : out std_ulogic_vector(15 downto 0);
                   status_frame_original_length : out std_ulogic_vector(15 downto 0);
@@ -378,6 +379,50 @@ package components is
                   );
       end component axis_frame_length_adjust;
 
+      component axis_frame_length_adjust_fifo is
+            generic (
+                  DATA_WIDTH        : integer := 8;
+                  KEEP_ENABLE       : boolean := (DATA_WIDTH > 8);
+                  KEEP_WIDTH        : integer := ((DATA_WIDTH+7)/8);
+                  ID_ENABLE         : boolean := false;
+                  ID_WIDTH          : integer := 8;
+                  DEST_ENABLE       : boolean := false;
+                  DEST_WIDTH        : integer := 8;
+                  USER_ENABLE       : boolean := true;
+                  USER_WIDTH        : integer := 1;
+                  FRAME_FIFO_DEPTH  : integer := 4096;
+                  HEADER_FIFO_DEPTH : integer := 8);
+            port (
+                  clk : in std_logic;
+                  rst : in std_logic;
 
+                  s_axis_tdata  : in  std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  s_axis_tkeep  : in  std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  s_axis_tvalid : in  std_ulogic;
+                  s_axis_tready : out std_ulogic;
+                  s_axis_tlast  : in  std_ulogic;
+                  s_axis_tid    : in  std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  s_axis_tdest  : in  std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  s_axis_tuser  : in  std_ulogic_vector(USER_WIDTH-1 downto 0);
+
+                  m_axis_hdr_valid           : out std_ulogic;
+                  m_axis_hdr_ready           : in  std_ulogic;
+                  m_axis_hdr_pad             : out std_ulogic;
+                  m_axis_hdr_truncate        : out std_ulogic;
+                  m_axis_hdr_length          : out std_ulogic_vector(15 downto 0);
+                  m_axis_hdr_original_length : out std_ulogic_vector(15 downto 0);
+                  m_axis_tdata               : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep               : out std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  m_axis_tvalid              : out std_ulogic;
+                  m_axis_tready              : in  std_ulogic;
+                  m_axis_tlast               : out std_ulogic;
+                  m_axis_tid                 : out std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  m_axis_tdest               : out std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  m_axis_tuser               : out std_ulogic_vector(USER_WIDTH-1 downto 0);
+
+                  length_min : in std_ulogic_vector(15 downto 0);
+                  length_max : in std_ulogic_vector(15 downto 0)
+                  );
+      end component axis_frame_length_adjust_fifo;
 
 end package components;
