@@ -6,7 +6,7 @@
 -- Author     : Nico De Simone  <nico.desimone@desy.de>
 -- Company    : DESY
 -- Created    : 2023-05-31
--- Last update: 2023-11-14
+-- Last update: 2024-01-19
 -- Platform   :
 -- Standard   : VHDL'08
 -------------------------------------------------------------------------------
@@ -129,23 +129,128 @@ package components is
             port (
                   clk           : in  std_logic;
                   rst           : in  std_logic;
-                  s_axis_tdata  : in  unsigned(DATA_WIDTH-1 downto 0);
-                  s_axis_tkeep  : in  unsigned(KEEP_WIDTH-1 downto 0);
+                  s_axis_tdata  : in  std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  s_axis_tkeep  : in  std_ulogic_vector(KEEP_WIDTH-1 downto 0);
                   s_axis_tvalid : in  std_logic;
                   s_axis_tready : out std_logic;
                   s_axis_tlast  : in  std_logic;
-                  s_axis_tid    : in  unsigned(ID_WIDTH-1 downto 0);
-                  s_axis_tdest  : in  unsigned(DEST_WIDTH-1 downto 0);
-                  s_axis_tuser  : in  unsigned(USER_WIDTH-1 downto 0);
-                  m_axis_tdata  : out unsigned(DATA_WIDTH-1 downto 0);
-                  m_axis_tkeep  : out unsigned(KEEP_WIDTH-1 downto 0);
+                  s_axis_tid    : in  std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  s_axis_tdest  : in  std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  s_axis_tuser  : in  std_ulogic_vector(USER_WIDTH-1 downto 0);
+                  m_axis_tdata  : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep  : out std_ulogic_vector(KEEP_WIDTH-1 downto 0);
                   m_axis_tvalid : out std_logic;
                   m_axis_tready : in  std_logic;
                   m_axis_tlast  : out std_logic;
-                  m_axis_tid    : out unsigned(ID_WIDTH-1 downto 0);
-                  m_axis_tdest  : out unsigned(DEST_WIDTH-1 downto 0);
-                  m_axis_tuser  : out unsigned(USER_WIDTH-1 downto 0));
+                  m_axis_tid    : out std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  m_axis_tdest  : out std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  m_axis_tuser  : out std_ulogic_vector(USER_WIDTH-1 downto 0));
       end component axis_register;
+
+      component axis_srl_register is
+            generic (
+                  DATA_WIDTH  : integer := 8;
+                  KEEP_ENABLE : boolean := (DATA_WIDTH > 8);
+                  KEEP_WIDTH  : integer := ((DATA_WIDTH+7)/8);
+                  LAST_ENABLE : boolean := true;
+                  ID_ENABLE   : boolean := false;
+                  ID_WIDTH    : integer := 8;
+                  DEST_ENABLE : boolean := false;
+                  DEST_WIDTH  : integer := 8;
+                  USER_ENABLE : boolean := true;
+                  USER_WIDTH  : integer := 1);
+            port (
+                  clk           : in  std_logic;
+                  rst           : in  std_logic;
+                  s_axis_tdata  : in  std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  s_axis_tkeep  : in  std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  s_axis_tvalid : in  std_logic;
+                  s_axis_tready : out std_logic;
+                  s_axis_tlast  : in  std_logic;
+                  s_axis_tid    : in  std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  s_axis_tdest  : in  std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  s_axis_tuser  : in  std_ulogic_vector(USER_WIDTH-1 downto 0);
+                  m_axis_tdata  : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep  : out std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  m_axis_tvalid : out std_logic;
+                  m_axis_tready : in  std_logic;
+                  m_axis_tlast  : out std_logic;
+                  m_axis_tid    : out std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  m_axis_tdest  : out std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  m_axis_tuser  : out std_ulogic_vector(USER_WIDTH-1 downto 0));
+      end component axis_srl_register;
+
+      component axis_pipeline_register is
+            generic (
+                  DATA_WIDTH  : integer := 8;
+                  KEEP_ENABLE : boolean := (DATA_WIDTH > 8);
+                  KEEP_WIDTH  : integer := ((DATA_WIDTH+7)/8);
+                  LAST_ENABLE : boolean := true;
+                  ID_ENABLE   : boolean := false;
+                  ID_WIDTH    : integer := 8;
+                  DEST_ENABLE : boolean := false;
+                  DEST_WIDTH  : integer := 8;
+                  USER_ENABLE : boolean := true;
+                  USER_WIDTH  : integer := 1;
+                  REG_TYPE    : integer := 2;
+                  LENGTH      : integer := 2
+                  );
+            port (
+                  clk           : in  std_logic;
+                  rst           : in  std_logic;
+                  s_axis_tdata  : in  std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  s_axis_tkeep  : in  std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  s_axis_tvalid : in  std_logic;
+                  s_axis_tready : out std_logic;
+                  s_axis_tlast  : in  std_logic;
+                  s_axis_tid    : in  std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  s_axis_tdest  : in  std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  s_axis_tuser  : in  std_ulogic_vector(USER_WIDTH-1 downto 0);
+                  m_axis_tdata  : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep  : out std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  m_axis_tvalid : out std_logic;
+                  m_axis_tready : in  std_logic;
+                  m_axis_tlast  : out std_logic;
+                  m_axis_tid    : out std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  m_axis_tdest  : out std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  m_axis_tuser  : out std_ulogic_vector(USER_WIDTH-1 downto 0));
+      end component axis_pipeline_register;
+
+      component axis_srl_fifo is
+            generic (
+                  DATA_WIDTH  : integer := 8;
+                  KEEP_ENABLE : boolean := (DATA_WIDTH > 8);
+                  KEEP_WIDTH  : integer := ((DATA_WIDTH+7)/8);
+                  LAST_ENABLE : boolean := true;
+                  ID_ENABLE   : boolean := false;
+                  ID_WIDTH    : integer := 8;
+                  DEST_ENABLE : boolean := false;
+                  DEST_WIDTH  : integer := 8;
+                  USER_ENABLE : boolean := true;
+                  USER_WIDTH  : integer := 1;
+                  DEPTH       : integer := 16
+                  );
+            port (
+                  clk           : in  std_logic;
+                  rst           : in  std_logic;
+                  s_axis_tdata  : in  std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  s_axis_tkeep  : in  std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  s_axis_tvalid : in  std_logic;
+                  s_axis_tready : out std_logic;
+                  s_axis_tlast  : in  std_logic;
+                  s_axis_tid    : in  std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  s_axis_tdest  : in  std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  s_axis_tuser  : in  std_ulogic_vector(USER_WIDTH-1 downto 0);
+                  m_axis_tdata  : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep  : out std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  m_axis_tvalid : out std_logic;
+                  m_axis_tready : in  std_logic;
+                  m_axis_tlast  : out std_logic;
+                  m_axis_tid    : out std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  m_axis_tdest  : out std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  m_axis_tuser  : out std_ulogic_vector(USER_WIDTH-1 downto 0);
+                  count         : out std_ulogic_vector(ceil_log2(DEPTH+1)-1 downto 0));
+      end component axis_srl_fifo;
 
       component axis_adapter is
             generic (
@@ -424,5 +529,39 @@ package components is
                   length_max : in std_ulogic_vector(15 downto 0)
                   );
       end component axis_frame_length_adjust_fifo;
+
+      component axis_tap is
+            generic (
+                  DATA_WIDTH  : integer := 8;
+                  KEEP_ENABLE : boolean := (DATA_WIDTH > 8);
+                  KEEP_WIDTH  : integer := ((DATA_WIDTH+7)/8);
+                  ID_ENABLE   : boolean := false;
+                  ID_WIDTH    : integer := 8;
+                  DEST_ENABLE : boolean := false;
+                  DEST_WIDTH  : integer := 8;
+                  USER_ENABLE : boolean := true;
+                  USER_WIDTH  : integer := 1;
+                  USER_BAD_FRAME_VALUE : integer := 1;
+                  USER_BAD_FRAME_MASK : integer := 1);
+            port (
+                  clk           : in  std_logic;
+                  rst           : in  std_logic;
+                  tap_axis_tdata  : in  std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  tap_axis_tkeep  : in  std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  tap_axis_tvalid : in  std_logic;
+                  tap_axis_tready : in std_logic;
+                  tap_axis_tlast  : in  std_logic;
+                  tap_axis_tid    : in  std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  tap_axis_tdest  : in  std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  tap_axis_tuser  : in  std_ulogic_vector(USER_WIDTH-1 downto 0);
+                  m_axis_tdata  : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep  : out std_ulogic_vector(KEEP_WIDTH-1 downto 0);
+                  m_axis_tvalid : out std_logic;
+                  m_axis_tready : in  std_logic;
+                  m_axis_tlast  : out std_logic;
+                  m_axis_tid    : out std_ulogic_vector(ID_WIDTH-1 downto 0);
+                  m_axis_tdest  : out std_ulogic_vector(DEST_WIDTH-1 downto 0);
+                  m_axis_tuser  : out std_ulogic_vector(USER_WIDTH-1 downto 0));
+      end component axis_tap;
 
 end package components;
