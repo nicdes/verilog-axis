@@ -29,9 +29,13 @@ COCOTB_HDL_TIMEPRECISION = 1ps
 DUT      = axis_async_fifo_adapter
 TOPLEVEL = $(DUT)
 MODULE   = test_$(DUT)
-VERILOG_SOURCES += ../../rtl/$(DUT).v
-VERILOG_SOURCES += ../../rtl/axis_async_fifo.v
-VERILOG_SOURCES += ../../rtl/axis_adapter.v
+VERILOG_SOURCES += ../../rtl/$(DUT).f
+
+# handle file list files
+process_f_file = $(call process_f_files,$(addprefix $(dir $1),$(shell cat $1)))
+process_f_files = $(foreach f,$1,$(if $(filter %.f,$f),$(call process_f_file,$f),$f))
+uniq_base = $(if $1,$(call uniq_base,$(foreach f,$1,$(if $(filter-out $(notdir $(lastword $1)),$(notdir $f)),$f,))) $(lastword $1))
+VERILOG_SOURCES := $(call uniq_base,$(call process_f_files,$(VERILOG_SOURCES)))
 
 # module parameters
 export PARAM_S_DATA_WIDTH := 8
@@ -55,6 +59,7 @@ export PARAM_USER_BAD_FRAME_MASK := 1
 export PARAM_DROP_OVERSIZE_FRAME := $(PARAM_FRAME_FIFO)
 export PARAM_DROP_BAD_FRAME := $(PARAM_DROP_OVERSIZE_FRAME)
 export PARAM_DROP_WHEN_FULL := 0
+export PARAM_MARK_WHEN_FULL := 0
 export PARAM_PAUSE_ENABLE := 1
 export PARAM_FRAME_PAUSE := 1
 
