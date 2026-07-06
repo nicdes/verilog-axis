@@ -21,7 +21,7 @@ utilize [cocotbext-axi](https://github.com/alexforencich/cocotbext-axi).
 ### `arbiter` module
 
 General-purpose parametrizable arbiter.  Supports priority and round-robin
-arbitration.  Supports blocking until request release or acknowledge.  
+arbitration.  Supports blocking until request release or acknowledge. 
 
 ### `axis_adapter` module
 

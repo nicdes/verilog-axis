@@ -6,7 +6,7 @@
 -- Author     : Nico De Simone  <nico.desimone@desy.de>
 -- Company    : DESY
 -- Created    : 2023-05-31
--- Last update: 2025-12-04
+-- Last update: 2026-05-20
 -- Platform   :
 -- Standard   : VHDL'08
 -------------------------------------------------------------------------------
@@ -390,19 +390,19 @@ package components is
                   clk : in std_logic;
                   rst : in std_logic;
 
-                  s_axis_tdata  : in  unsigned(S_COUNT*DATA_WIDTH-1 downto 0);
-                  s_axis_tvalid : in  unsigned(S_COUNT-1 downto 0);
-                  s_axis_tready : out unsigned(S_COUNT-1 downto 0);
-                  s_axis_tlast  : in  unsigned(S_COUNT-1 downto 0);
-                  s_axis_tuser  : in  unsigned(S_COUNT-1 downto 0);
+                  s_axis_tdata  : in  std_ulogic_vector(S_COUNT*DATA_WIDTH-1 downto 0);
+                  s_axis_tvalid : in  std_ulogic_vector(S_COUNT-1 downto 0);
+                  s_axis_tready : out std_ulogic_vector(S_COUNT-1 downto 0);
+                  s_axis_tlast  : in  std_ulogic_vector(S_COUNT-1 downto 0);
+                  s_axis_tuser  : in  std_ulogic_vector(S_COUNT-1 downto 0);
 
-                  m_axis_tdata  : out unsigned(DATA_WIDTH-1 downto 0);
+                  m_axis_tdata  : out std_ulogic_vector(DATA_WIDTH-1 downto 0);
                   m_axis_tvalid : out std_logic;
                   m_axis_tready : in  std_logic;
                   m_axis_tlast  : out std_logic;
                   m_axis_tuser  : out std_logic;
 
-                  tag  : in  unsigned(TAG_WIDTH-1 downto 0);
+                  tag  : in  std_ulogic_vector(TAG_WIDTH-1 downto 0);
                   busy : out std_logic
                   );
       end component axis_frame_join;
@@ -688,5 +688,130 @@ package components is
                   );
       end component axis_broadcast;
 
+      component axis_switch
+            generic (
+                  -- Number of AXI stream inputs
+                  S_COUNT               : integer := 4;
+                  -- Number of AXI stream outputs
+                  M_COUNT               : integer := 4;
+                  -- Width of AXI stream interfaces in bits
+                  DATA_WIDTH            : integer := 8;
+                  -- Propagate tkeep signal
+                  KEEP_ENABLE           : integer := 1;
+                  -- tkeep signal width
+                  KEEP_WIDTH            : integer := 1;
+                  -- Propagate tid
+                  ID_ENABLE             : integer := 0;
+                  -- input tid width
+                  S_ID_WIDTH            : integer := 8;
+                  -- output tid width
+                  M_ID_WIDTH            : integer := 8;
+                  -- output tdest width
+                  M_DEST_WIDTH          : integer := 1;
+                  -- input tdest width
+                  S_DEST_WIDTH          : integer := 2;
+                  -- propagate tuser
+                  USER_ENABLE           : integer := 1;
+                  -- user width
+                  USER_WIDTH            : integer := 1;
+                  -- routing base/top
+                  M_BASE                : integer := 0;
+                  M_TOP                 : integer := 0;
+                  -- M_COUNT groups of S_COUNT bits
+                  M_CONNECT             : integer := 0;
+                  -- update TID
+                  UPDATE_TID            : integer := 0;
+                  -- input/output register types
+                  S_REG_TYPE            : integer := 0;
+                  M_REG_TYPE            : integer := 2;
+                  -- arbitration
+                  ARB_TYPE_ROUND_ROBIN  : integer := 1;
+                  ARB_LSB_HIGH_PRIORITY : integer := 1
+                  );
+            port (
+                  clk : in std_logic;
+                  rst : in std_logic;
+
+                  -- AXI Stream inputs
+                  s_axis_tdata  : in  std_logic_vector(S_COUNT*DATA_WIDTH-1 downto 0);
+                  s_axis_tkeep  : in  std_logic_vector(S_COUNT*KEEP_WIDTH-1 downto 0);
+                  s_axis_tvalid : in  std_logic_vector(S_COUNT-1 downto 0);
+                  s_axis_tready : out std_logic_vector(S_COUNT-1 downto 0);
+                  s_axis_tlast  : in  std_logic_vector(S_COUNT-1 downto 0);
+                  s_axis_tid    : in  std_logic_vector(S_COUNT*S_ID_WIDTH-1 downto 0);
+                  s_axis_tdest  : in  std_logic_vector(S_COUNT*S_DEST_WIDTH-1 downto 0);
+                  s_axis_tuser  : in  std_logic_vector(S_COUNT*USER_WIDTH-1 downto 0);
+
+                  -- AXI Stream outputs
+                  m_axis_tdata  : out std_logic_vector(M_COUNT*DATA_WIDTH-1 downto 0);
+                  m_axis_tkeep  : out std_logic_vector(M_COUNT*KEEP_WIDTH-1 downto 0);
+                  m_axis_tvalid : out std_logic_vector(M_COUNT-1 downto 0);
+                  m_axis_tready : in  std_logic_vector(M_COUNT-1 downto 0);
+                  m_axis_tlast  : out std_logic_vector(M_COUNT-1 downto 0);
+                  m_axis_tid    : out std_logic_vector(M_COUNT*M_ID_WIDTH-1 downto 0);
+                  m_axis_tdest  : out std_logic_vector(M_COUNT*M_DEST_WIDTH-1 downto 0);
+                  m_axis_tuser  : out std_logic_vector(M_COUNT*USER_WIDTH-1 downto 0)
+                  );
+      end component;
+
+      component axis_stat_counter is
+            generic (
+                  -- Width of AXI stream interfaces in bits
+                  DATA_WIDTH : integer := 64;
+                  -- Propagate tkeep signal
+                  -- If disabled, tkeep is assumed to be 1'b1
+                  KEEP_ENABLE : boolean  := (DATA_WIDTH > 8);
+                  -- tkeep signal width (words per cycle)
+                  KEEP_WIDTH  : positive := (DATA_WIDTH + 7) / 8;
+                  -- Prepend data with tag
+                  TAG_ENABLE : boolean := true;
+                  -- Tag field width
+                  TAG_WIDTH : integer := 16;
+                  -- Count cycles
+                  TICK_COUNT_ENABLE : boolean := true;
+                  -- Cycle counter width
+                  TICK_COUNT_WIDTH : integer := 32;
+                  -- Count bytes
+                  BYTE_COUNT_ENABLE : boolean := true;
+                  -- Byte counter width
+                  BYTE_COUNT_WIDTH : integer := 32;
+                  -- Count frames
+                  FRAME_COUNT_ENABLE : boolean := true;
+                  -- Frame counter width
+                  FRAME_COUNT_WIDTH : integer := 32
+                  );
+            port (
+                  clk : in std_logic;
+                  rst : in std_logic;
+
+                  ---------------------------------------------------------------------------
+                  -- AXI monitor
+                  ---------------------------------------------------------------------------
+                  monitor_axis_tkeep  : in std_logic_vector(KEEP_WIDTH - 1 downto 0);
+                  monitor_axis_tvalid : in std_logic;
+                  monitor_axis_tready : in std_logic;
+                  monitor_axis_tlast  : in std_logic;
+
+                  ---------------------------------------------------------------------------
+                  -- AXI status data output
+                  ---------------------------------------------------------------------------
+                  m_axis_tdata  : out std_logic_vector(7 downto 0);
+                  m_axis_tvalid : out std_logic;
+                  m_axis_tready : in  std_logic;
+                  m_axis_tlast  : out std_logic;
+                  m_axis_tuser  : out std_logic;
+
+                  ---------------------------------------------------------------------------
+                  -- Configuration
+                  ---------------------------------------------------------------------------
+                  tag     : in std_logic_vector(TAG_WIDTH - 1 downto 0);
+                  trigger : in std_logic;
+
+                  ---------------------------------------------------------------------------
+                  -- Status
+                  ---------------------------------------------------------------------------
+                  busy : out std_logic
+                  );
+      end component axis_stat_counter;
 
 end package components;

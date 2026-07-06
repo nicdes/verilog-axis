@@ -85,7 +85,7 @@ module axis_broadcast #
     output wire [M_COUNT*USER_WIDTH-1:0] m_axis_tuser
 );
 
-parameter CL_M_COUNT = $clog2(M_COUNT);
+localparam CL_M_COUNT = $clog2(M_COUNT);
 
 // datapath registers
 reg s_axis_tready_reg = 1'b0, s_axis_tready_next;
